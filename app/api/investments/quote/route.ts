@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Mark route as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 // Alpha Vantage API for stock prices (free tier: 5 calls/minute, 500 calls/day)
 // You can get a free API key from https://www.alphavantage.co/support/#api-key
 const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;

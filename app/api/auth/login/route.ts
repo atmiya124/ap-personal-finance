@@ -5,6 +5,9 @@ import bcrypt from "bcryptjs";
 import { createSession } from "@/lib/session";
 import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from "@/lib/rate-limit";
 
+// Mark route as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 // Get credentials from environment variables
 const DEFAULT_EMAIL = process.env.DEFAULT_EMAIL || "atmiyapatel024@gmail.com";
 const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || "123456";

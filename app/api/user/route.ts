@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user-id";
 
+// Mark route as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const user = await getCurrentUser();

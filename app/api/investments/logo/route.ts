@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Mark route as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 // Multiple sources for company logos
 // 1. LogoKit API (public, free, no key required) - PRIMARY SOURCE
 // 2. Financial Modeling Prep (requires API key)

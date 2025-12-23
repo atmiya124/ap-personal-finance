@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifySession, deleteSession } from "@/lib/session";
 
+// Mark route as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   try {
     const cookieStore = await cookies();

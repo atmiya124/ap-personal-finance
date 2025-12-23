@@ -3,6 +3,11 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from "@/lib/rate-limit";
+import { verifySession } from "@/lib/session";
+import { getCurrentUser } from "@/lib/get-user-id";
+
+// Mark route as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -30,10 +35,29 @@ export async function POST(request: Request) {
       );
     }
 
+    // Verify authentication using JWT session
     const cookieStore = await cookies();
-    const session = cookieStore.get("auth-session");
+    const sessionCookie = cookieStore.get("auth-session");
 
-    if (!session || session.value !== "authenticated") {
+    if (!sessionCookie?.value) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Verify JWT session
+    const session = await verifySession(sessionCookie.value);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get the authenticated user
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -57,46 +81,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get the authenticated user - try by email first, then by default ID
-    let user = await prisma.user.findUnique({
-      where: { email: "atmiyapatel024@gmail.com" },
-    });
-
-    // If not found by email, try by default ID
-    if (!user) {
-      user = await prisma.user.findUnique({
-        where: { id: "default-user" },
-      });
-    }
-
-    // If user doesn't exist, this shouldn't happen if logged in
-    // But if it does, we need to create the user first
-    if (!user) {
-      // Create user with the new password (since we can't verify current password for new user)
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await prisma.user.create({
-        data: {
-          id: "default-user",
-          name: "Atmiya",
-          email: "atmiyapatel024@gmail.com",
-          password: hashedPassword,
-        },
-      });
-      return NextResponse.json({ success: true, message: "Password set successfully" });
-    }
-
     // If user exists but has no password, set it directly (first time setup)
-    if (!user.password) {
+    if (!currentUser.password) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       await prisma.user.update({
-        where: { id: user.id },
+        where: { id: currentUser.id },
         data: { password: hashedPassword },
       });
       return NextResponse.json({ success: true, message: "Password set successfully" });
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: "Current password is incorrect" },
@@ -109,7 +105,7 @@ export async function POST(request: Request) {
 
     // Update password
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: currentUser.id },
       data: { password: hashedPassword },
     });
 
