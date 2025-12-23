@@ -1,0 +1,196 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  password          String?  // Hashed password for authentication
+  avatar            String?
+  currency          String   @default("CAD")
+  dateFormat        String   @default("MM/DD/YYYY")
+  failedLoginAttempts Int    @default(0)
+  lockedUntil       DateTime? // Account lockout until this time
+  lastLoginAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  accounts        Account[]
+  transactions    Transaction[]
+  categories      Category[]
+  investments     Investment[]
+  investmentProfiles InvestmentProfile[]
+  investmentSales InvestmentSale[]
+  subscriptions   Subscription[]
+  taxRecords       TaxRecord[]
+  sessions        Session[]
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Account {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "bank", "credit_card", "wallet", "savings"
+  balance     Float    @default(0)
+  currency    String   @default("CAD")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  transactions Transaction[]
+  subscriptions Subscription[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "income" or "expense"
+  icon        String?
+  color       String   @default("#3B82F6")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  transactions Transaction[]
+  subscriptions Subscription[]
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  type        String   // "income", "expense", "transfer"
+  amount      Float
+  description String?
+  payee       String?
+  date        DateTime @default(now())
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InvestmentProfile {
+  id          String   @id @default(cuid())
+  name        String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  investments Investment[]
+}
+
+model Investment {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "stock", "crypto", "mutual_fund", "other"
+  symbol      String?
+  quantity    Float
+  purchasePrice Float
+  currentPrice  Float
+  purchaseDate DateTime @default(now())
+  strategy    String?  // "Long Term Growth", "Dividend Growth", "Index Tracking", "Growth Play", "Tech Sector", etc.
+  target      Float?   // Target price for the investment
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileId   String?
+  profile     InvestmentProfile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  sales       InvestmentSale[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InvestmentSale {
+  id            String     @id @default(cuid())
+  investmentId  String
+  investment    Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  quantity      Float
+  sellPrice     Float
+  sellDate      DateTime   @default(now())
+  realizedGain  Float      // Calculated gain/loss for this sale
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   @default("subscription") // "subscription" or "bill"
+  amount      Float
+  frequency   String   @default("monthly") // "monthly", "yearly", "weekly", "daily"
+  dueDate     Int?     // Day of month (1-31)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  accountId   String?
+  account     Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  payments    SubscriptionPayment[]
+}
+
+model SubscriptionPayment {
+  id            String       @id @default(cuid())
+  subscriptionId String
+  subscription  Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount        Float
+  paidDate      DateTime
+  isPaid        Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model TaxRecord {
+  id                String   @id @default(cuid())
+  financialYear     String   // e.g., "2024-25"
+  totalIncome        Float
+  totalDeductions    Float
+  regime             String   @default("new") // "old" or "new"
+  calculatedTax      Float
+  effectiveRate      Float
+  previousYearTax    Float?   // For comparison
+  salary             Float    @default(0)
+  otherIncome        Float    @default(0)
+  capitalGains       Float    @default(0)
+  standardDeduction  Float    @default(0)
+  taxSavingInvestments Float  @default(0)
+  healthInsurance    Float    @default(0)
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
