@@ -36,8 +36,7 @@ export async function POST(request: Request) {
     }
 
     // Verify authentication using JWT session
-    const cookieStore = cookies();
-
+    const cookieStore = await cookies();
     const sessionCookie = cookieStore.get("auth-session");
 
     if (!sessionCookie?.value) {

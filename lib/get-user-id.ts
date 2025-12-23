@@ -36,7 +36,7 @@ export async function getUserId(): Promise<string | null> {
  * Get the current authenticated user
  * Returns null if not authenticated
  */
-export async function getCurrentUser(userId: any) {
+export async function getCurrentUser() {
   try {
     const userId = await getUserId();
     if (!userId) return null;
