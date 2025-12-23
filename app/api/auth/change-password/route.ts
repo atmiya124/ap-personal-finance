@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/get-user-id";
 
 // Mark route as dynamic to prevent static generation
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
     }
 
     // Verify authentication using JWT session
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const sessionCookie = cookieStore.get("auth-session");
 
     if (!sessionCookie?.value) {

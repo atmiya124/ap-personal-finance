@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Mark route as dynamic to prevent static generation
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // Alpha Vantage API for stock prices (free tier: 5 calls/minute, 500 calls/day)
 // You can get a free API key from https://www.alphavantage.co/support/#api-key
@@ -108,12 +109,12 @@ async function getAlphaVantageQuote(symbol: string) {
       changePercent: parseFloat(quote["10. change percent"].replace("%", "")),
       currency: "USD",
     };
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Alpha Vantage API error:", error);
-      }
-      throw error;
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Alpha Vantage API error:", error);
     }
+    throw error;
+  }
 }
 
 export async function GET(request: NextRequest) {

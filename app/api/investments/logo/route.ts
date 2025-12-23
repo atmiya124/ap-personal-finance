@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Mark route as dynamic to prevent static generation
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // Multiple sources for company logos
 // 1. LogoKit API (public, free, no key required) - PRIMARY SOURCE

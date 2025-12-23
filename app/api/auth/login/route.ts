@@ -7,6 +7,7 @@ import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from "@/lib/rate-lim
 
 // Mark route as dynamic to prevent static generation
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // Get credentials from environment variables
 const DEFAULT_EMAIL = process.env.DEFAULT_EMAIL || "atmiyapatel024@gmail.com";
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     });
 
     // Set session cookie with JWT token
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     cookieStore.set("auth-session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

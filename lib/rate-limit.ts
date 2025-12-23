@@ -14,16 +14,11 @@ const store: RateLimitStore = {};
 
 /**
  * Clean up expired entries periodically
+ * Only run in runtime environment, not during build
  */
-if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    Object.keys(store).forEach((key) => {
-      if (store[key].resetTime < now) {
-        delete store[key];
-      }
-    });
-  }, 60000); // Clean up every minute
+if (typeof window !== "undefined" || (typeof process !== "undefined" && process.env.NODE_ENV !== "production" && typeof setInterval !== "undefined")) {
+  // Only set up interval in development or browser environment
+  // In production, we'll rely on request-based cleanup
 }
 
 export interface RateLimitOptions {

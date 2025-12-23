@@ -4,10 +4,11 @@ import { verifySession, deleteSession } from "@/lib/session";
 
 // Mark route as dynamic to prevent static generation
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST() {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const sessionCookie = cookieStore.get("auth-session");
 
     // Delete session from database if token is valid
@@ -24,7 +25,7 @@ export async function POST() {
     return NextResponse.json({ success: true });
   } catch (error) {
     // Even if there's an error, clear the cookie
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     cookieStore.delete("auth-session");
     
     return NextResponse.json({ success: true });

@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/get-user-id";
 
 // Mark route as dynamic to prevent static generation
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
