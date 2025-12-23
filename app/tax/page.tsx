@@ -2,6 +2,9 @@ import { BusinessIncomeCalculator } from "@/components/BusinessIncomeCalculator"
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user-id";
 
+// Mark page as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 async function getAccounts() {
   const user = await getCurrentUser();
   if (!user) {

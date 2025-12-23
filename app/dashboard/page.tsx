@@ -8,6 +8,9 @@ import { WelcomeSection } from "@/components/WelcomeSection";
 import { DashboardClient } from "@/components/DashboardClient";
 import { getCurrentUser } from "@/lib/get-user-id";
 
+// Mark page as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 async function getDashboardData(dateRange?: { from?: Date; to?: Date }) {
   // Get current authenticated user
   const user = await getCurrentUser();

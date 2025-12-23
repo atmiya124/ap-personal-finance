@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { CategoriesClient } from "@/components/CategoriesClient";
 import { getCurrentUser } from "@/lib/get-user-id";
 
+// Mark page as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 async function getCategories() {
   const user = await getCurrentUser();
   if (!user) {

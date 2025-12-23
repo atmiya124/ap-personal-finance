@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { AccountsClient } from "@/components/AccountsClient";
 import { getCurrentUser } from "@/lib/get-user-id";
 
+// Mark page as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 async function getAccounts() {
   const user = await getCurrentUser();
   if (!user) {

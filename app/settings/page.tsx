@@ -3,6 +3,9 @@ import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 import { ExportData } from "@/components/ExportData";
 import { getCurrentUser } from "@/lib/get-user-id";
 
+// Mark page as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 async function getUser() {
   const user = await getCurrentUser();
   if (!user) {
