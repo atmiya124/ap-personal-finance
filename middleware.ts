@@ -5,7 +5,6 @@ import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from "@/lib/rate-lim
 
 export function middleware(request: NextRequest) {
   const session = request.cookies.get("auth-session");
-  const userId = request.cookies.get("user-id");
   const pathname = request.nextUrl.pathname;
 
   // Apply rate limiting to API routes
@@ -33,7 +32,7 @@ export function middleware(request: NextRequest) {
 
   // Allow access to login page
   if (pathname === "/login") {
-    if (session?.value && userId?.value) {
+    if (session?.value) {
       // If already logged in, redirect to dashboard
       const response = NextResponse.redirect(new URL("/dashboard", request.url));
       return addSecurityHeaders(response, request);
@@ -42,8 +41,9 @@ export function middleware(request: NextRequest) {
     return addSecurityHeaders(response, request);
   }
 
-  // Protect all other routes
-  if (!session?.value || !userId?.value) {
+  // Protect all other routes - only check for auth-session cookie
+  // The session contains JWT with user info, so we don't need a separate user-id cookie
+  if (!session?.value) {
     const loginUrl = new URL("/login", request.url);
     const response = NextResponse.redirect(loginUrl);
     return addSecurityHeaders(response, request);
