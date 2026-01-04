@@ -67,7 +67,7 @@ function InvestmentsContent({ initialData }: InvestmentsClientProps) {
   }, [initialData.investments, activeTab]);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 bg-gray-50 min-h-screen">
+    <div className="max-w-screen-2xl mx-auto px-6 py-8 bg-gray-50 min-h-screen">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">Investments</h1>
@@ -177,7 +177,7 @@ function InvestmentsContent({ initialData }: InvestmentsClientProps) {
 
 export function InvestmentsClient({ initialData }: InvestmentsClientProps) {
   return (
-    <Suspense fallback={<div className="max-w-7xl mx-auto px-6 py-8">Loading...</div>}>
+    <Suspense fallback={<div className="max-w-screen-2xl mx-auto px-6 py-8">Loading...</div>}>
       <InvestmentsContent initialData={initialData} />
     </Suspense>
   );
