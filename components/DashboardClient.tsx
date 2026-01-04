@@ -207,9 +207,11 @@ export function DashboardClient({ initialData, availableYears }: DashboardClient
   const previousPeriod = calculatePreviousPeriod();
 
   // Calculate percentage changes
-  const calculatePercentageChange = (current: number, previous: number): number => {
+  const calculatePercentageChange = (current: number, previous: number): number | string => {
     if (previous === 0) {
-      return current > 0 ? 100 : 0;
+      if (current === 0) return 0;
+      if (current > 0) return 'N/A';
+      if (current < 0) return 'N/A';
     }
     return ((current - previous) / previous) * 100;
   };

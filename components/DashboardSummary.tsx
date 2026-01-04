@@ -21,9 +21,12 @@ export function DashboardSummary({
   expensesChange = 0,
   balanceChange = 0,
 }: DashboardSummaryProps) {
-  const formatPercentage = (value: number): string => {
-    const sign = value >= 0 ? "++" : "";
-    return `${sign}${Math.abs(value).toFixed(0)}%`;
+  const formatPercentage = (value: number | string): string => {
+    if (typeof value === 'string') return value;
+    if (value === 0) return '0%';
+    if (value > 0) return `+${value.toFixed(0)}%`;
+    if (value < 0) return `-${Math.abs(value).toFixed(0)}%`;
+    return '0%';
   };
 
   return (

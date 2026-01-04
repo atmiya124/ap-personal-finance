@@ -8,6 +8,9 @@ import { isAuthenticated } from "@/lib/auth";
 export const metadata: Metadata = {
   title: "Atmiya - Personal Finance Manager",
   description: "Manage your personal finances, track expenses, and investments",
+  icons: [
+    { rel: "icon", url: "/favicon.svg", type: "image/svg+xml" }
+  ],
 };
 
 export default async function RootLayout({

@@ -97,116 +97,113 @@ export function InvestmentProfileSelector({
     }
 
     try {
-      await deleteInvestmentProfile(profileId);
-      toast({
-        title: "Success",
-        description: "Profile deleted successfully",
-      });
-      router.refresh();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete profile",
-        variant: "destructive",
-      });
-    }
-  };
+      return (
+        <div className="flex items-center gap-3">
+          <Label htmlFor="profile-select" className="text-sm font-medium">
+            Profile:
+          </Label>
+          <Select
+            value={profiles.length > 0 ? (currentProfileId || profiles[0].id) : undefined}
+            onValueChange={handleProfileChange}
+            disabled={profiles.length === 0}
+          >
+            <SelectTrigger id="profile-select" className="w-[200px]">
+              <SelectValue placeholder={profiles.length === 0 ? "No profiles - Create one first" : undefined} />
+            </SelectTrigger>
+            <SelectContent>
+              {profiles.map((profile) => (
+                <SelectItem key={profile.id} value={profile.id}>
+                  <div className="flex items-center gap-2">
+                    {profile.isDefault && (
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    )}
+                    {profile.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-  const handleSetDefault = async (profileId: string) => {
-    try {
-      await setDefaultInvestmentProfile(profileId);
-      toast({
-        title: "Success",
-        description: "Default profile updated",
-      });
-      router.refresh();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to set default profile",
-        variant: "destructive",
-      });
-    }
-  };
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                New Profile
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Investment Profile</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreateProfileAndSelect} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="profile-name">Profile Name</Label>
+                  <Input
+                    id="profile-name"
+                    type="text"
+                    value={newProfileName}
+                    onChange={(e) => setNewProfileName(e.target.value)}
+                    placeholder="e.g., Personal, Retirement, Joint"
+                    required
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Create
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
-  return (
-    <div className="flex items-center gap-3">
-      <Label htmlFor="profile-select" className="text-sm font-medium">
-        Profile:
-      </Label>
-      <Select
-        value={currentProfileId || ""}
-        onValueChange={handleProfileChange}
-      >
-        <SelectTrigger id="profile-select" className="w-[200px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {profiles.length === 0 ? (
-            <SelectItem value="" disabled>No profiles - Create one first</SelectItem>
-          ) : (
-            profiles.map((profile) => (
-              <SelectItem key={profile.id} value={profile.id}>
-                <div className="flex items-center gap-2">
+          {profiles.length > 0 && (
+            <div className="flex items-center gap-2 ml-2">
+              {profiles.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md text-sm group"
+                >
+                  <span>{profile.name}</span>
                   {profile.isDefault && (
                     <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                   )}
-                  {profile.name}
+                  <div className="flex items-center gap-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {!profile.isDefault && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
+                        onClick={() => handleSetDefault(profile.id)}
+                        title="Set as default"
+                      >
+                        <Star className="w-3 h-3" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 text-red-600 hover:text-red-700"
+                      onClick={() => handleDeleteProfile(profile.id)}
+                      title="Delete profile"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-              </SelectItem>
-            ))
+              ))}
+            </div>
           )}
-        </SelectContent>
-      </Select>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            New Profile
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Investment Profile</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateProfileAndSelect} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="profile-name">Profile Name</Label>
-              <Input
-                id="profile-name"
-                type="text"
-                value={newProfileName}
-                onChange={(e) => setNewProfileName(e.target.value)}
-                placeholder="e.g., Personal, Retirement, Joint"
-                required
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsDialogOpen(false)}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Create
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {profiles.length > 0 && (
-        <div className="flex items-center gap-2 ml-2">
-          {profiles.map((profile) => (
-            <div
-              key={profile.id}
-              className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-md text-sm group"
-            >
+        </div>
+      );
               <span>{profile.name}</span>
               {profile.isDefault && (
                 <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
