@@ -30,7 +30,7 @@ export function Sidebar() {
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 min-h-screen p-6">
-      <h1 className="text-2xl font-bold mb-8 text-gray-900">FinSight</h1>
+      <h1 className="text-2xl font-bold mb-8 text-gray-900">AP - Finance</h1>
       <nav className="space-y-1">
         {navigation.map((item) => {
           const Icon = item.icon;
