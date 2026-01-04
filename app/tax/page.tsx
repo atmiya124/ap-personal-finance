@@ -53,7 +53,7 @@ export default async function TaxPage() {
   const transactions = await getTransactions();
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="max-w-screen-2xl mx-auto px-6 py-8 bg-gray-50 min-h-screen">
       <BusinessIncomeCalculator accounts={accounts} transactions={transactions} />
     </div>
   );
