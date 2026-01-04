@@ -7,9 +7,9 @@ interface DashboardSummaryProps {
   expenses: number;
   balance: number;
   currency: string;
-  incomeChange?: number;
-  expensesChange?: number;
-  balanceChange?: number;
+  incomeChange?: number | string;
+  expensesChange?: number | string;
+  balanceChange?: number | string;
 }
 
 export function DashboardSummary({
