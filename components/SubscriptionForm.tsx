@@ -86,6 +86,9 @@ export function SubscriptionForm({
   const [dueDateValue, setDueDateValue] = useState<Date | undefined>(
     getDateFromDay(subscription?.dueDate || null)
   );
+  const [dueMonth, setDueMonth] = useState(
+    subscription?.dueDate ? new Date(subscription.dueDate).getMonth() : 0
+  );
   const [categoryId, setCategoryId] = useState(
     subscription?.categoryId || subscription?.category?.id || "none"
   );
@@ -132,7 +135,7 @@ export function SubscriptionForm({
         type,
         amount: parseFloat(amount),
         frequency,
-        dueDate: dueDateDay,
+        dueDate: frequency === "yearly" ? new Date(dueMonth + 1, dueDateDay || 1, 0).getDate() : dueDateDay,
         categoryId: categoryId === "none" || !categoryId ? null : categoryId,
         accountId: accountId === "none" || !accountId ? null : accountId,
         isActive,
@@ -236,21 +239,60 @@ export function SubscriptionForm({
                     <SelectItem value="daily">Daily</SelectItem>
                     <SelectItem value="weekly">Weekly</SelectItem>
                     <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="yearly">Yearly</SelectItem>
+                    <SelectItem value="yearly">Annually</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="dueDate">Due Date (Day of Month)</Label>
-                <DatePicker
-                  date={dueDateValue}
-                  onDateChange={(date) => setDueDateValue(date)}
-                  placeholder="Select day of month"
-                />
-              </div>
+              {frequency === "yearly" ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="dueMonth">Due Month</Label>
+                    <select
+                      id="dueMonth"
+                      value={dueMonth}
+                      onChange={e => setDueMonth(Number(e.target.value))}
+                      className="w-full border rounded px-2 py-2"
+                    >
+                      {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, idx) => (
+                        <option key={m} value={idx}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dueDate">Due Day</Label>
+                    <Input
+                      id="dueDate"
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={dueDateValue ? dueDateValue.getDate() : ""}
+                      onChange={e => {
+                        const day = Number(e.target.value);
+                        if (day >= 1 && day <= 31) {
+                          const today = new Date();
+                          setDueDateValue(new Date(today.getFullYear(), dueMonth, day));
+                        }
+                      }}
+                      placeholder="Day of Month"
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate">Due Date (Day of Month)</Label>
+                  <DatePicker
+                    date={dueDateValue}
+                    onDateChange={(date) => setDueDateValue(date)}
+                    placeholder="Select day of month"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Select value={categoryId} onValueChange={setCategoryId}>
@@ -267,27 +309,26 @@ export function SubscriptionForm({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="account">Account</Label>
-              {accounts.length === 0 ? (
-                <p className="text-sm text-red-600 p-2 bg-red-50 rounded">Please create an account first</p>
-              ) : (
-                <Select value={accountId} onValueChange={setAccountId}>
-                  <SelectTrigger id="account">
-                    <SelectValue placeholder="Select an account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {accounts.map((acc) => (
-                      <SelectItem key={acc.id} value={acc.id}>
-                        {acc.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="account">Account</Label>
+                {accounts.length === 0 ? (
+                  <p className="text-sm text-red-600 p-2 bg-red-50 rounded">Please create an account first</p>
+                ) : (
+                  <Select value={accountId} onValueChange={setAccountId}>
+                    <SelectTrigger id="account">
+                      <SelectValue placeholder="Select an account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -376,14 +417,53 @@ export function SubscriptionForm({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date (Day of Month)</Label>
-              <DatePicker
-                date={dueDateValue}
-                onDateChange={(date) => setDueDateValue(date)}
-                placeholder="Select day of month"
-              />
-            </div>
+            {frequency === "yearly" ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="dueMonth">Due Month</Label>
+                  <select
+                    id="dueMonth"
+                    value={dueMonth}
+                    onChange={e => setDueMonth(Number(e.target.value))}
+                    className="w-full border rounded px-2 py-2"
+                  >
+                    {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, idx) => (
+                      <option key={m} value={idx}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate">Due Day</Label>
+                  <Input
+                    id="dueDate"
+                    type="number"
+                    min={1}
+                    max={31}
+                    value={dueDateValue ? dueDateValue.getDate() : ""}
+                    onChange={e => {
+                      const day = Number(e.target.value);
+                      if (day >= 1 && day <= 31) {
+                        const today = new Date();
+                        setDueDateValue(new Date(today.getFullYear(), dueMonth, day));
+                      }
+                    }}
+                    placeholder="Day of Month"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Due Date (Day of Month)</Label>
+                <DatePicker
+                  date={dueDateValue}
+                  onDateChange={(date) => setDueDateValue(date)}
+                  placeholder="Select day of month"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
@@ -400,27 +480,26 @@ export function SubscriptionForm({
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="account">Account</Label>
-            {accounts.length === 0 ? (
-              <p className="text-sm text-red-600 p-2 bg-red-50 rounded">Please create an account first</p>
-            ) : (
-              <Select value={accountId} onValueChange={setAccountId}>
-                <SelectTrigger id="account">
-                  <SelectValue placeholder="Select an account" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {accounts.map((acc) => (
-                    <SelectItem key={acc.id} value={acc.id}>
-                      {acc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="account">Account</Label>
+              {accounts.length === 0 ? (
+                <p className="text-sm text-red-600 p-2 bg-red-50 rounded">Please create an account first</p>
+              ) : (
+                <Select value={accountId} onValueChange={setAccountId}>
+                  <SelectTrigger id="account">
+                    <SelectValue placeholder="Select an account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {accounts.map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -520,14 +599,53 @@ export function SubscriptionForm({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date (Day of Month)</Label>
-              <DatePicker
-                date={dueDateValue}
-                onDateChange={(date) => setDueDateValue(date)}
-                placeholder="Select day of month"
-              />
-            </div>
+            {frequency === "yearly" ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="dueMonth">Due Month</Label>
+                  <select
+                    id="dueMonth"
+                    value={dueMonth}
+                    onChange={e => setDueMonth(Number(e.target.value))}
+                    className="w-full border rounded px-2 py-2"
+                  >
+                    {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, idx) => (
+                      <option key={m} value={idx}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate">Due Day</Label>
+                  <Input
+                    id="dueDate"
+                    type="number"
+                    min={1}
+                    max={31}
+                    value={dueDateValue ? dueDateValue.getDate() : ""}
+                    onChange={e => {
+                      const day = Number(e.target.value);
+                      if (day >= 1 && day <= 31) {
+                        const today = new Date();
+                        setDueDateValue(new Date(today.getFullYear(), dueMonth, day));
+                      }
+                    }}
+                    placeholder="Day of Month"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Due Date (Day of Month)</Label>
+                <DatePicker
+                  date={dueDateValue}
+                  onDateChange={(date) => setDueDateValue(date)}
+                  placeholder="Select day of month"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
@@ -543,6 +661,26 @@ export function SubscriptionForm({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="account">Account</Label>
+              {accounts.length === 0 ? (
+                <p className="text-sm text-red-600 p-2 bg-red-50 rounded">Please create an account first</p>
+              ) : (
+                <Select value={accountId} onValueChange={setAccountId}>
+                  <SelectTrigger id="account">
+                    <SelectValue placeholder="Select an account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {accounts.map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 
