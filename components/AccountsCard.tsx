@@ -109,15 +109,14 @@ export function AccountsCard({ accounts }: AccountsCardProps) {
                   </p>
                 </div>
 
-                {/* Type */}
+                {/* Account Name (replaces TYPE) */}
                 <div className="flex items-start gap-8 absolute bottom-6 right-6">
                   <div>
-                    <p className="block text-[10px] opacity-60">TYPE</p>
+                    <p className="block text-[10px] opacity-60">NAME</p>
                     <p className="text-base font-medium text-white">
-                      {accountTypeMap[currentAccount.type] || currentAccount.type}
+                      {currentAccount.name}
                     </p>
                   </div>
-                  
                 </div>
               </CardContent>
             </Card>
