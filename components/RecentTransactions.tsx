@@ -126,7 +126,7 @@ export function RecentTransactions({
               <TransactionForm 
                 accounts={accounts} 
                 categories={categories}
-                buttonText="+ Add"
+                buttonText="Add"
                 onSuccess={() => {
                   startTransition(() => {
                     router.refresh();

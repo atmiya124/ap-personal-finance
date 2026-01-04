@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { isAuthenticated } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "FinSight - Personal Finance Manager",
+  title: "Atmiya - Personal Finance Manager",
   description: "Manage your personal finances, track expenses, and investments",
 };
 
