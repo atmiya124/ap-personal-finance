@@ -48,7 +48,7 @@ export function Header({ userName = "User", userEmail = "atmiyapatel024@gmail.co
         {/* Welcome Message */}
         <div className="flex-1">
           <h1 className="text-lg font-semibold text-gray-900">
-            {getGreeting()}, {firstName} 👋
+            {getGreeting()}, Atmiya 👋
           </h1>
           <p className="text-sm text-gray-500">Welcome back to your dashboard</p>
         </div>

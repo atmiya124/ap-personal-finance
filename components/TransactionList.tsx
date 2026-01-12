@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
+import { DatePicker } from "@/components/ui/datepicker";
 import { Edit, Trash2, Filter } from "lucide-react";
 import { TransactionForm } from "./TransactionForm";
 import { deleteTransaction } from "@/app/actions";
@@ -70,13 +71,31 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
 
   const filteredTransactions = transactions.filter((t) => {
     if (filterType !== "all" && t.type !== filterType) return false;
     if (filterCategory !== "all" && t.category?.id !== filterCategory) return false;
     if (filterAccount !== "all" && t.account.id !== filterAccount) return false;
+    if (selectedMonth) {
+      const date = typeof t.date === "string" ? new Date(t.date) : t.date;
+      if (
+        date.getFullYear() !== selectedMonth.getFullYear() ||
+        date.getMonth() !== selectedMonth.getMonth()
+      ) {
+        return false;
+      }
+    }
     return true;
   });
+
+  // Calculate totals for selected month
+  const totalIncome = filteredTransactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = filteredTransactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const handleDeleteClick = (id: string) => {
     setTransactionToDelete(id);
@@ -117,6 +136,29 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
               <Filter className="w-5 h-5 text-gray-500" />
               <span className="text-sm font-medium">Filters:</span>
             </div>
+            {/* Month Picker */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Month:</span>
+              <DatePicker
+                date={selectedMonth || undefined}
+                onDateChange={(date) => setSelectedMonth(date || null)}
+                placeholder="Select month"
+                className="w-[180px]"
+                mode="month"
+              />
+            </div>
+          </div>
+          {/* Totals for selected month */}
+          {selectedMonth && (
+            <div className="mb-4 flex gap-8 items-center">
+              <div className="text-green-700 font-semibold text-lg">
+                Total Income: {formatCurrency(totalIncome)}
+              </div>
+              <div className="text-red-700 font-semibold text-lg">
+                Total Expense: {formatCurrency(totalExpense)}
+              </div>
+            </div>
+          )}
             
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[150px]">
