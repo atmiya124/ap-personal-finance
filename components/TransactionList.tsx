@@ -159,46 +159,6 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
               </div>
             </div>
           )}
-            
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
-                <SelectItem value="expense">Expense</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filterAccount} onValueChange={setFilterAccount}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Accounts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Accounts</SelectItem>
-                {accounts.map((acc) => (
-                  <SelectItem key={acc.id} value={acc.id}>
-                    {acc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -214,7 +174,7 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
             <TableBody>
               {filteredTransactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     No transactions found
                   </TableCell>
                 </TableRow>
@@ -225,7 +185,7 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
                     : transaction.date;
                   return editingId === transaction.id ? (
                     <TableRow key={transaction.id}>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={7}>
                         <TransactionForm
                           accounts={accounts}
                           categories={categories}
@@ -302,7 +262,44 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
           </Table>
         </CardContent>
       </Card>
-
+      <div className="mb-4 flex gap-4 items-center flex-wrap">
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="income">Income</SelectItem>
+            <SelectItem value="expense">Expense</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filterAccount} onValueChange={setFilterAccount}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="All Accounts" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Accounts</SelectItem>
+            {accounts.map((acc) => (
+              <SelectItem key={acc.id} value={acc.id}>
+                {acc.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
