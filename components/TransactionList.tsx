@@ -162,6 +162,7 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
+                <TableHead>Payee</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Account</TableHead>
@@ -203,7 +204,8 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
                   ) : (
                     <TableRow key={transaction.id}>
                       <TableCell>{format(date, "MMM dd, yyyy")}</TableCell>
-                      <TableCell>{transaction.description || transaction.payee || "-"}</TableCell>
+                      <TableCell>{transaction.payee || "-"}</TableCell>
+                      <TableCell>{transaction.description || "-"}</TableCell>
                       <TableCell>
                         {transaction.category ? (
                           <Badge
