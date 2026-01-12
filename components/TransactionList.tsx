@@ -132,7 +132,7 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex gap-4 items-center justify-between flex-wrap">
-            <div>
+            <div className="flex gap-4 items-center flex-wrap">
               {/* Type Filter */}
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-[150px]">
@@ -175,7 +175,6 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
             </div>
             {/* Month Picker */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Month:</span>
               <DatePicker
                 date={selectedMonth || undefined}
                 onDateChange={(date) => setSelectedMonth(date || null)}
