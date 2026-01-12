@@ -131,10 +131,47 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
           <CardTitle>Transactions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 flex gap-4 items-center flex-wrap">
-            <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-gray-500" />
-              <span className="text-sm font-medium">Filters:</span>
+          <div className="mb-4 flex gap-4 items-center justify-between flex-wrap">
+            <div>
+              {/* Type Filter */}
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="income">Income</SelectItem>
+                  <SelectItem value="expense">Expense</SelectItem>
+                </SelectContent>
+              </Select>
+              {/* Category Filter */}
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Account Filter */}
+              <Select value={filterAccount} onValueChange={setFilterAccount}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="All Accounts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Accounts</SelectItem>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {/* Month Picker */}
             <div className="flex items-center gap-2">
@@ -147,45 +184,6 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
                 mode="month"
               />
             </div>
-            {/* Type Filter */}
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
-                <SelectItem value="expense">Expense</SelectItem>
-              </SelectContent>
-            </Select>
-            {/* Category Filter */}
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* Account Filter */}
-            <Select value={filterAccount} onValueChange={setFilterAccount}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Accounts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Accounts</SelectItem>
-                {accounts.map((acc) => (
-                  <SelectItem key={acc.id} value={acc.id}>
-                    {acc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
           {/* Totals for selected month */}
           {selectedMonth && (
@@ -195,6 +193,12 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
               </div>
               <div className="">
                 Total Expense: <span className="text-red-700 font-semibold text-lg">{formatCurrency(totalExpense)}</span>
+              </div>
+              <div>
+                Gross Total:{" "}
+                <span className={`font-semibold text-lg ${
+                  totalIncome - totalExpense >= 0 ? "text-green-700" : "text-red-700"
+                }`}>{formatCurrency(totalIncome - totalExpense)}</span>
               </div>
             </div>
           )}
