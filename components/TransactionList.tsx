@@ -199,7 +199,6 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
               </SelectContent>
             </Select>
           </div>
-
           <Table>
             <TableHeader>
               <TableRow>
