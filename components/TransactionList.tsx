@@ -145,7 +145,6 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
                 placeholder="Select month"
                 className="w-[180px]"
                 mode="month"
-                showMonthOnly
               />
             </div>
             {/* Type Filter */}
