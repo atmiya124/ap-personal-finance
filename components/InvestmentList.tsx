@@ -427,26 +427,36 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                       return (
                         <TableRow key={investment.id}>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              {logoUrl && !failedLogos.has(investment.symbol || "") ? (
-                                <div className="relative w-8 h-8 rounded overflow-hidden bg-white border border-gray-200 flex-shrink-0">
-                                  <Image
-                                    src={logoUrl}
-                                    alt={`${investment.symbol || investment.name} logo`}
-                                    fill
-                                    className="object-contain p-0.5"
-                                    unoptimized
-                                    onError={() => {
-                                      setLogos((prev) => {
-                                        const newLogos = { ...prev };
-                                        delete newLogos[investment.symbol!];
-                                        return newLogos;
-                                      });
-                                      setFailedLogos((prev) => new Set(prev).add(investment.symbol!));
-                                    }}
-                                  />
+                            <div className="flex items-center gap-3">
+                              {investment.symbol && (
+                                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white border border-gray-200 flex-shrink-0 flex items-center justify-center">
+                                  {logoUrl && !failedLogos.has(investment.symbol) ? (
+                                    <Image
+                                      src={logoUrl}
+                                      alt={`${investment.symbol} logo`}
+                                      fill
+                                      className="object-contain p-1"
+                                      unoptimized
+                                      onError={() => {
+                                        setLogos((prev) => {
+                                          const newLogos = { ...prev };
+                                          delete newLogos[investment.symbol!];
+                                          return newLogos;
+                                        });
+                                        setFailedLogos((prev) => new Set(prev).add(investment.symbol!));
+                                      }}
+                                    />
+                                  ) : refreshingLogos.has(investment.symbol) ? (
+                                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                      <span className="text-xs font-semibold text-gray-500">
+                                        {investment.symbol.substring(0, 2).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
-                              ) : null}
+                              )}
                               <div className="flex flex-col">
                                 <span className="font-semibold text-blue-600">
                                   {investment.name}

@@ -7,6 +7,7 @@ import {
   AuthenticationError,
   NotFoundError,
   ValidationError,
+  DatabaseError,
   getUserFriendlyError,
 } from "@/lib/errors";
 
