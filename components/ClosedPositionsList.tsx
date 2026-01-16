@@ -101,16 +101,6 @@ export function ClosedPositionsList({ profileId, activeTab = "usd", onTabChange 
     );
   }
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground">Loading closed positions...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (allClosedPositions.length === 0) {
     return (
       <Card>
