@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { TransactionList } from "@/components/TransactionList";
 import { TransactionForm } from "@/components/TransactionForm";
+import { ExportButton } from "@/components/ExportButton";
 import { startTransition } from "react";
+import { formatDate } from "@/lib/export-utils";
 
 interface TransactionsClientProps {
   initialData: {
@@ -21,15 +23,34 @@ export function TransactionsClient({ initialData }: TransactionsClientProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
-          <TransactionForm 
-            accounts={initialData.accounts} 
-            categories={initialData.categories}
-            onSuccess={() => {
-              startTransition(() => {
-                router.refresh();
-              });
-            }}
-          />
+          <div className="flex items-center gap-3">
+            <ExportButton
+              data={initialData.transactions}
+              filename="transactions"
+              dataType="transactions"
+              headers={["Date", "Type", "Amount", "Description", "Payee", "Account", "Category"]}
+              transformData={(transactions) => {
+                return transactions.map((t: any) => ({
+                  Date: formatDate(t.date),
+                  Type: t.type,
+                  Amount: t.amount,
+                  Description: t.description || "",
+                  Payee: t.payee || "",
+                  Account: t.account?.name || "",
+                  Category: t.category?.name || "",
+                }));
+              }}
+            />
+            <TransactionForm 
+              accounts={initialData.accounts} 
+              categories={initialData.categories}
+              onSuccess={() => {
+                startTransition(() => {
+                  router.refresh();
+                });
+              }}
+            />
+          </div>
         </div>
         <TransactionList 
           transactions={initialData.transactions} 

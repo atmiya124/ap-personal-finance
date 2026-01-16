@@ -12,7 +12,9 @@ import { RecentTransactions } from "@/components/RecentTransactions";
 import { UpcomingSubscriptions } from "@/components/UpcomingSubscriptions";
 import { AccountsCard } from "@/components/AccountsCard";
 import { YearSelector } from "@/components/YearSelector";
+import { ExportButton } from "@/components/ExportButton";
 import { format } from "date-fns";
+import { formatDate } from "@/lib/export-utils";
 
 interface Transaction {
   id: string;
@@ -245,10 +247,31 @@ export function DashboardClient({ initialData, availableYears }: DashboardClient
               }
             </p>
           </div>
-          <YearSelector 
-            availableYears={availableYears} 
-            currentYear={currentYear}
-          />
+          <div className="flex items-center gap-3">
+            {filteredTransactions.length > 0 && (
+              <ExportButton
+                data={filteredTransactions}
+                filename={`dashboard-transactions-${selectedYear}`}
+                dataType="transactions"
+                headers={["Date", "Type", "Amount", "Description", "Payee", "Account", "Category"]}
+                transformData={(transactions) => {
+                  return transactions.map((t: any) => ({
+                    Date: formatDate(t.date),
+                    Type: t.type,
+                    Amount: t.amount,
+                    Description: t.description || "",
+                    Payee: t.payee || "",
+                    Account: t.account?.name || "",
+                    Category: t.category?.name || "",
+                  }));
+                }}
+              />
+            )}
+            <YearSelector 
+              availableYears={availableYears} 
+              currentYear={currentYear}
+            />
+          </div>
         </div>
          
         {/* Main Content Grid */}

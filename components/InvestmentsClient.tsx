@@ -5,9 +5,11 @@ import { InvestmentList } from "@/components/InvestmentList";
 import { InvestmentForm } from "@/components/InvestmentForm";
 import { InvestmentProfileSelector } from "@/components/InvestmentProfileSelector";
 import { ClosedPositionsList } from "@/components/ClosedPositionsList";
+import { ExportButton } from "@/components/ExportButton";
 import { startTransition, Suspense, useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { formatDate } from "@/lib/export-utils";
 
 interface InvestmentsClientProps {
   initialData: {
@@ -120,6 +122,27 @@ function InvestmentsContent({ initialData }: InvestmentsClientProps) {
                 <TabsTrigger value="canadian">Canadian Market/Stocks</TabsTrigger>
               </TabsList>
               <div className="flex items-center gap-3">
+                {filteredInvestments.length > 0 && (
+                  <ExportButton
+                    data={filteredInvestments}
+                    filename={`investments-${activeTab}`}
+                    dataType="investments"
+                    headers={["Name", "Type", "Symbol", "Quantity", "Purchase Price", "Current Price", "Purchase Date", "Strategy", "Target"]}
+                    transformData={(investments) => {
+                      return investments.map((inv: any) => ({
+                        Name: inv.name,
+                        Type: inv.type,
+                        Symbol: inv.symbol || "",
+                        Quantity: inv.quantity,
+                        "Purchase Price": inv.purchasePrice,
+                        "Current Price": inv.currentPrice,
+                        "Purchase Date": formatDate(inv.purchaseDate),
+                        Strategy: inv.strategy || "",
+                        Target: inv.target || "",
+                      }));
+                    }}
+                  />
+                )}
                 {isProfileSelected && (
                   <Button
                     variant={showClosedPositions ? "default" : "outline"}
