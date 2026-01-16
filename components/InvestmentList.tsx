@@ -385,9 +385,9 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader className="bg-[#e2e2e2]">
-                  <TableRow>
-                    <TableHead className="rounded-tl-lg">Stock</TableHead>
+                <TableHeader className="bg-[#e2e2e2]/30">
+                  <TableRow className="[&>th:first-child]:rounded-tl-lg [&>th:last-child]:rounded-tr-lg [&>th:first-child]:rounded-bl-lg [&>th:last-child]:rounded-br-lg">
+                    <TableHead>Stock</TableHead>
                     <TableHead>Buy Date</TableHead>
                     <TableHead className="text-right">Buy Price</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
@@ -401,7 +401,7 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                     <TableHead className="text-right">Target</TableHead>
                     <TableHead className="text-right">Target Value</TableHead>
                     <TableHead className="text-right">Remaining</TableHead>
-                    <TableHead className="text-center rounded-tr-lg">Action</TableHead>
+                    <TableHead className="text-center">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
