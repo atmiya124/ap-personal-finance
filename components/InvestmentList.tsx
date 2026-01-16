@@ -404,7 +404,7 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                     <TableHead className="text-center">Action</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="[&_tr:first-child]:border-t-0">
                 {investments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={15} className="text-center text-gray-500">
