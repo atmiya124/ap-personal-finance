@@ -385,9 +385,9 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-[#e2e2e2]">
                   <TableRow>
-                    <TableHead>Stock</TableHead>
+                    <TableHead className="rounded-tl-lg">Stock</TableHead>
                     <TableHead>Buy Date</TableHead>
                     <TableHead className="text-right">Buy Price</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
@@ -401,7 +401,7 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                     <TableHead className="text-right">Target</TableHead>
                     <TableHead className="text-right">Target Value</TableHead>
                     <TableHead className="text-right">Remaining</TableHead>
-                    <TableHead className="text-center">Action</TableHead>
+                    <TableHead className="text-center rounded-tr-lg">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -423,10 +423,14 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                       const days = Math.floor((new Date().getTime() - buyDate.getTime()) / (1000 * 60 * 60 * 24));
                       const targetValue = investment.target ? investment.quantity * investment.target : null;
                       const logoUrl = investment.symbol ? logos[investment.symbol] : null;
+                      const isTargetReached = investment.target ? investment.currentPrice >= investment.target : false;
 
                       return (
-                        <TableRow key={investment.id}>
-                          <TableCell>
+                        <TableRow 
+                          key={investment.id}
+                          className={isTargetReached ? "bg-green-50/50" : ""}
+                        >
+                          <TableCell className={isTargetReached ? "rounded-l-lg" : ""}>
                             <div className="flex items-center gap-3">
                               {investment.symbol && (
                                 <div className={`relative w-10 h-10 rounded-full overflow-hidden border flex-shrink-0 flex items-center justify-center ${
@@ -521,7 +525,6 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                             {investment.target ? (
                               (() => {
                                 const remainingPercent = ((investment.target - investment.currentPrice) / investment.target) * 100;
-                                const isTargetReached = investment.currentPrice >= investment.target;
                                 return isTargetReached ? (
                                   <Badge className="bg-green-600 text-white">
                                     Target Reached
@@ -532,7 +535,7 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                               })()
                             ) : "-"}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className={`text-center ${isTargetReached ? "rounded-r-lg" : ""}`}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8">

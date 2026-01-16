@@ -174,42 +174,24 @@ export function InvestmentForm({ investment, onCancel, onSuccess, profileId, act
         return;
       }
 
-      // Ensure name is set (should be auto-fetched, but fallback to symbol if not)
-      const finalName = name || symbol.trim();
-
-      // Handle symbol - preserve original format when editing, transform when creating
-      let finalSymbol = symbol.trim();
       if (investment) {
-        // When editing, preserve the symbol as entered (don't force uppercase)
-        // This ensures the investment doesn't disappear from filtered views
-        finalSymbol = finalSymbol;
-      } else {
-        // For new investments, uppercase and add .TO if needed
-        finalSymbol = finalSymbol.toUpperCase();
-        if (activeTab === "canadian" && type === "stock") {
-          const hasCanadianSuffix = finalSymbol.includes(".TO") || 
-                                    finalSymbol.includes(".V") || 
-                                    finalSymbol.includes("TSX");
-          if (!hasCanadianSuffix) {
-            finalSymbol = finalSymbol + ".TO";
-          }
-        }
-      }
+        // Single investment update
+        const finalName = name || symbol.trim();
+        let finalSymbol = symbol.trim();
 
-      const data = {
-        name: finalName,
-        type,
-        symbol: finalSymbol,
-        quantity: parseFloat(quantity),
-        purchasePrice: parseFloat(purchasePrice),
-        currentPrice: parseFloat(currentPrice),
-        purchaseDate: purchaseDate,
-        strategy: strategy || null,
-        target: target ? parseFloat(target) : null,
-        profileId: profileId && profileId !== "all" && profileId !== "none" ? profileId : null,
-      };
+        const data = {
+          name: finalName,
+          type,
+          symbol: finalSymbol,
+          quantity: parseFloat(quantity),
+          purchasePrice: parseFloat(purchasePrice),
+          currentPrice: parseFloat(currentPrice),
+          purchaseDate: purchaseDate,
+          strategy: strategy || null,
+          target: target ? parseFloat(target) : null,
+          profileId: profileId && profileId !== "all" && profileId !== "none" ? profileId : null,
+        };
 
-      if (investment) {
         try {
           await updateInvestment(investment.id, data);
           toast({
@@ -223,13 +205,123 @@ export function InvestmentForm({ investment, onCancel, onSuccess, profileId, act
           throw updateError; // Re-throw to be caught by outer catch
         }
       } else {
-        await createInvestment(data);
-        toast({
-          title: "Success",
-          description: "Investment created successfully",
-        });
-        setIsOpen(false);
-        if (onSuccess) onSuccess();
+        // Multiple investments creation - parse symbols
+        const symbolInput = symbol.trim();
+        // Split by comma or newline, filter out empty strings
+        const symbols = symbolInput
+          .split(/[,\n]/)
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+
+        if (symbols.length === 0) {
+          toast({
+            title: "Error",
+            description: "Please enter at least one symbol",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        let successCount = 0;
+        let errorCount = 0;
+        const errors: string[] = [];
+
+        // Create investments for each symbol
+        for (const sym of symbols) {
+          try {
+            // Process symbol
+            let finalSymbol = sym.toUpperCase();
+            if (activeTab === "canadian" && type === "stock") {
+              const hasCanadianSuffix = finalSymbol.includes(".TO") || 
+                                        finalSymbol.includes(".V") || 
+                                        finalSymbol.includes("TSX");
+              if (!hasCanadianSuffix) {
+                finalSymbol = finalSymbol + ".TO";
+              }
+            }
+
+            // Fetch price and name for this symbol
+            let investmentName = sym;
+            let investmentPrice = parseFloat(currentPrice) || 0;
+            
+            if (type === "stock" || type === "crypto") {
+              try {
+                const response = await fetch(
+                  `/api/investments/quote?symbol=${encodeURIComponent(finalSymbol)}&type=${encodeURIComponent(type)}`
+                );
+                if (response.ok) {
+                  const data = await response.json();
+                  if (data.price) {
+                    investmentPrice = data.price;
+                  }
+                  if (data.name) {
+                    investmentName = data.name;
+                  } else if (data.symbol) {
+                    investmentName = data.symbol;
+                  }
+                }
+              } catch (fetchError) {
+                // Continue with default values if fetch fails
+                if (process.env.NODE_ENV === "development") {
+                  console.error(`Error fetching price for ${finalSymbol}:`, fetchError);
+                }
+              }
+            }
+
+            const data = {
+              name: investmentName,
+              type,
+              symbol: finalSymbol,
+              quantity: parseFloat(quantity),
+              purchasePrice: parseFloat(purchasePrice) || investmentPrice,
+              currentPrice: investmentPrice,
+              purchaseDate: purchaseDate,
+              strategy: strategy || null,
+              target: target ? parseFloat(target) : null,
+              profileId: profileId && profileId !== "all" && profileId !== "none" ? profileId : null,
+            };
+
+            await createInvestment(data);
+            successCount++;
+          } catch (error: any) {
+            errorCount++;
+            errors.push(`${sym}: ${error.message || "Failed to create"}`);
+          }
+        }
+
+        // Show results
+        if (successCount > 0 && errorCount === 0) {
+          toast({
+            title: "Success",
+            description: `Successfully created ${successCount} investment${successCount > 1 ? 's' : ''}`,
+          });
+          setIsOpen(false);
+          if (onSuccess) onSuccess();
+        } else if (successCount > 0 && errorCount > 0) {
+          toast({
+            title: "Partial Success",
+            description: `Created ${successCount} investment${successCount > 1 ? 's' : ''}, ${errorCount} failed`,
+            variant: "default",
+          });
+          setIsOpen(false);
+          // Reset form after successful creation
+          setName("");
+          setSymbol("");
+          setQuantity("");
+          setPurchasePrice("");
+          setCurrentPrice("");
+          setPurchaseDate(new Date());
+          setStrategy("");
+          setTarget("");
+          if (onSuccess) onSuccess();
+        } else {
+          toast({
+            title: "Error",
+            description: `Failed to create investments. ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`,
+            variant: "destructive",
+          });
+        }
       }
       if (!investment) {
         setName("");
@@ -279,33 +371,51 @@ export function InvestmentForm({ investment, onCancel, onSuccess, profileId, act
 
             <div className="space-y-2">
         <Label htmlFor="symbol">Symbol *</Label>
-        <div className="flex gap-2">
-              <Input
-                id="symbol"
-                type="text"
-                value={symbol}
-                onChange={(e) => setSymbol(e.target.value)}
-                placeholder="e.g., AAPL, BTC"
-            className="flex-1"
-            required
-          />
-          {symbol && (type === "stock" || type === "crypto") && (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => fetchCurrentPrice(symbol, type)}
-              disabled={fetchingPrice}
-              title="Fetch current price"
-            >
-              {fetchingPrice ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-            </Button>
-          )}
-        </div>
+        {investment ? (
+          // Single symbol input for editing
+          <div className="flex gap-2">
+            <Input
+              id="symbol"
+              type="text"
+              value={symbol}
+              onChange={(e) => setSymbol(e.target.value)}
+              placeholder="e.g., AAPL"
+              className="flex-1"
+              required
+            />
+            {symbol && (type === "stock" || type === "crypto") && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => fetchCurrentPrice(symbol, type)}
+                disabled={fetchingPrice}
+                title="Fetch current price"
+              >
+                {fetchingPrice ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+          </div>
+        ) : (
+          // Multi-select textarea for adding new investments
+          <div className="space-y-2">
+            <textarea
+              id="symbol"
+              value={symbol}
+              onChange={(e) => setSymbol(e.target.value)}
+              placeholder="Enter symbols separated by commas (e.g., AAPL, MSFT, GOOGL) or one per line"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              required
+            />
+            <p className="text-xs text-gray-500">
+              Enter multiple symbols separated by commas or new lines. Each symbol will create a separate investment with the same quantity, price, and date.
+            </p>
+          </div>
+        )}
         {fetchingPrice && (
           <p className="text-xs text-gray-500">Fetching current price...</p>
         )}
