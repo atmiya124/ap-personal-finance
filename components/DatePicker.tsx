@@ -51,6 +51,9 @@ export function DatePicker({
           onSelect={(selectedDate) => onDateChange(selectedDate)}
           initialFocus
           disabled={(date) => date > new Date()} // Disable future dates
+          captionLayout="dropdown"
+          fromYear={1900}
+          toYear={new Date().getFullYear()}
         />
       </PopoverContent>
     </Popover>
