@@ -475,7 +475,13 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                           <TableCell className="text-right">
                             {formatCurrency(investment.purchasePrice, "CAD")}
                           </TableCell>
-                          <TableCell className="text-right">{investment.quantity}</TableCell>
+                          <TableCell className="text-right">
+                            <Badge 
+                              className="bg-blue-50 text-blue-600 border border-blue-200"
+                            >
+                              {investment.quantity}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(buyValue, "CAD")}
                           </TableCell>
