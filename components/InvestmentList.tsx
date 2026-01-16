@@ -429,7 +429,11 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                           <TableCell>
                             <div className="flex items-center gap-3">
                               {investment.symbol && (
-                                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white border border-gray-200 flex-shrink-0 flex items-center justify-center">
+                                <div className={`relative w-10 h-10 rounded-full overflow-hidden border flex-shrink-0 flex items-center justify-center ${
+                                  gain >= 0 
+                                    ? "bg-green-50 border-green-200" 
+                                    : "bg-red-50 border-red-200"
+                                }`}>
                                   {logoUrl && !failedLogos.has(investment.symbol) ? (
                                     <Image
                                       src={logoUrl}
@@ -449,8 +453,12 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                                   ) : refreshingLogos.has(investment.symbol) ? (
                                     <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                      <span className="text-xs font-semibold text-gray-500">
+                                    <div className={`w-full h-full flex items-center justify-center ${
+                                      gain >= 0 ? "bg-green-100" : "bg-red-100"
+                                    }`}>
+                                      <span className={`text-xs font-semibold ${
+                                        gain >= 0 ? "text-green-700" : "text-red-700"
+                                      }`}>
                                         {investment.symbol.substring(0, 2).toUpperCase()}
                                       </span>
                                     </div>
