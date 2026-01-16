@@ -549,6 +549,15 @@ export async function sellInvestment(data: {
   // Get the investment
   const investment = await prisma.investment.findUnique({
     where: { id: data.investmentId },
+    select: {
+      id: true,
+      name: true,
+      symbol: true,
+      type: true,
+      purchasePrice: true,
+      quantity: true,
+      profileId: true,
+    },
   });
 
   if (!investment) {
@@ -562,7 +571,7 @@ export async function sellInvestment(data: {
   // Calculate realized gain/loss
   const realizedGain = (data.sellPrice - investment.purchasePrice) * data.quantity;
 
-  // Create the sale record
+  // Create the sale record with investment details for historical record
   await prisma.investmentSale.create({
     data: {
       investmentId: data.investmentId,
@@ -571,6 +580,12 @@ export async function sellInvestment(data: {
       sellDate: data.sellDate,
       realizedGain,
       userId,
+      // Store investment details in case investment is deleted
+      investmentName: investment.name,
+      investmentSymbol: investment.symbol,
+      investmentType: investment.type,
+      purchasePrice: investment.purchasePrice,
+      profileId: investment.profileId,
     },
   });
 

@@ -131,13 +131,19 @@ model Investment {
 model InvestmentSale {
   id            String     @id @default(cuid())
   investmentId  String
-  investment    Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  investment    Investment? @relation(fields: [investmentId], references: [id], onDelete: SetNull)
   quantity      Float
   sellPrice     Float
   sellDate      DateTime   @default(now())
   realizedGain  Float      // Calculated gain/loss for this sale
   userId        String
   user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Store investment details for historical record even if investment is deleted
+  investmentName String?
+  investmentSymbol String?
+  investmentType String?
+  purchasePrice Float?
+  profileId     String?    // Store profileId for filtering even after investment is deleted
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 }

@@ -19,65 +19,42 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = { userId };
 
-    // If profileId is provided, we need to filter by investments that belong to that profile
-    // Since InvestmentSale doesn't have profileId directly, we need to join through Investment
-    let sales;
+    // Build where clause for sales
+    const salesWhere: any = { userId };
     
+    // If profileId is provided, filter by profileId stored in sale record
     if (profileId && profileId !== "all" && profileId !== "none") {
-      // Get investments for this profile first
-      const profileInvestments = await prisma.investment.findMany({
-        where: {
-          userId,
-          profileId: profileId,
-        },
-        select: { id: true },
-      });
-
-      const investmentIds = profileInvestments.map((inv) => inv.id);
-
-      if (investmentIds.length === 0) {
-        return NextResponse.json({ sales: [] });
-      }
-
-      sales = await prisma.investmentSale.findMany({
-        where: {
-          userId,
-          investmentId: { in: investmentIds },
-        },
-        include: {
-          investment: {
-            select: {
-              id: true,
-              name: true,
-              symbol: true,
-              type: true,
-              purchasePrice: true,
-            },
-          },
-        },
-        orderBy: { sellDate: "desc" },
-      });
-    } else {
-      // Get all sales for the user
-      sales = await prisma.investmentSale.findMany({
-        where,
-        include: {
-          investment: {
-            select: {
-              id: true,
-              name: true,
-              symbol: true,
-              type: true,
-              purchasePrice: true,
-            },
-          },
-        },
-        orderBy: { sellDate: "desc" },
-      });
+      salesWhere.profileId = profileId;
     }
+    
+    // Get all sales for the user (filtered by profileId if provided)
+    let sales = await prisma.investmentSale.findMany({
+      where: salesWhere,
+      include: {
+        investment: {
+          select: {
+            id: true,
+            name: true,
+            symbol: true,
+            type: true,
+            purchasePrice: true,
+          },
+        },
+      },
+      orderBy: { sellDate: "desc" },
+    });
 
-    // Filter out sales where investment was deleted (shouldn't happen due to cascade, but be safe)
-    sales = sales.filter((sale) => sale.investment !== null);
+    // Use stored investment data if investment relation is null (investment was deleted)
+    sales = sales.map((sale) => ({
+      ...sale,
+      investment: sale.investment || {
+        id: sale.investmentId,
+        name: sale.investmentName || "Unknown",
+        symbol: sale.investmentSymbol,
+        type: sale.investmentType || "stock",
+        purchasePrice: sale.purchasePrice || 0,
+      },
+    }));
 
     return NextResponse.json({ sales });
   } catch (error: any) {
