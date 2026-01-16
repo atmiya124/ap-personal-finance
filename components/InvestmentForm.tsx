@@ -177,15 +177,22 @@ export function InvestmentForm({ investment, onCancel, onSuccess, profileId, act
       // Ensure name is set (should be auto-fetched, but fallback to symbol if not)
       const finalName = name || symbol.trim();
 
-      // Auto-append .TO suffix for Canadian stocks if in Canadian Market tab
-      let finalSymbol = symbol.trim().toUpperCase();
-      if (activeTab === "canadian" && type === "stock" && !investment) {
-        // Only for new investments (not editing)
-        const hasCanadianSuffix = finalSymbol.includes(".TO") || 
-                                  finalSymbol.includes(".V") || 
-                                  finalSymbol.includes("TSX");
-        if (!hasCanadianSuffix) {
-          finalSymbol = finalSymbol + ".TO";
+      // Handle symbol - preserve original format when editing, transform when creating
+      let finalSymbol = symbol.trim();
+      if (investment) {
+        // When editing, preserve the symbol as entered (don't force uppercase)
+        // This ensures the investment doesn't disappear from filtered views
+        finalSymbol = finalSymbol;
+      } else {
+        // For new investments, uppercase and add .TO if needed
+        finalSymbol = finalSymbol.toUpperCase();
+        if (activeTab === "canadian" && type === "stock") {
+          const hasCanadianSuffix = finalSymbol.includes(".TO") || 
+                                    finalSymbol.includes(".V") || 
+                                    finalSymbol.includes("TSX");
+          if (!hasCanadianSuffix) {
+            finalSymbol = finalSymbol + ".TO";
+          }
         }
       }
 
@@ -203,21 +210,27 @@ export function InvestmentForm({ investment, onCancel, onSuccess, profileId, act
       };
 
       if (investment) {
-        await updateInvestment(investment.id, data);
-        toast({
-          title: "Success",
-          description: "Investment updated successfully",
-        });
+        try {
+          await updateInvestment(investment.id, data);
+          toast({
+            title: "Success",
+            description: "Investment updated successfully",
+          });
+          setIsOpen(false);
+          if (onSuccess) onSuccess();
+        } catch (updateError: any) {
+          // Don't close the dialog if update fails
+          throw updateError; // Re-throw to be caught by outer catch
+        }
       } else {
         await createInvestment(data);
         toast({
           title: "Success",
           description: "Investment created successfully",
         });
+        setIsOpen(false);
+        if (onSuccess) onSuccess();
       }
-
-      setIsOpen(false);
-      if (onSuccess) onSuccess();
       if (!investment) {
         setName("");
         setType("stock");

@@ -435,29 +435,83 @@ export async function updateInvestment(
   const userId = await getUserId();
   if (!userId) throw new AuthenticationError();
 
+  // Validate required fields
+  if (!data.name || !data.type || !data.symbol) {
+    throw new ValidationError("Name, type, and symbol are required");
+  }
+
+  if (data.quantity <= 0 || data.purchasePrice <= 0 || data.currentPrice <= 0) {
+    throw new ValidationError("Quantity and prices must be greater than 0");
+  }
+
   // Verify the investment exists and belongs to the user
   const investment = await prisma.investment.findUnique({
     where: { id },
-    select: { id: true, userId: true },
+    select: { id: true, userId: true, profileId: true, symbol: true },
   });
 
   if (!investment) {
-    throw new NotFoundError("Investment");
+    throw new NotFoundError("Investment not found");
   }
 
   if (investment.userId !== userId) {
     throw new AuthenticationError("You don't have permission to update this investment");
   }
 
-  await prisma.investment.update({
-    where: { id },
-    data: {
-      ...data,
-      profileId: data.profileId || null,
-    },
-  });
+  // Determine the profileId to use
+  // If profileId is explicitly provided (including null), use it
+  // Otherwise, preserve the existing profileId
+  // Note: We check if profileId is in the data object to determine if it was explicitly set
+  let finalProfileId: string | null;
+  if (data.profileId !== undefined) {
+    // Explicitly provided (could be null or a string)
+    finalProfileId = data.profileId;
+  } else {
+    // Not provided, preserve existing
+    finalProfileId = investment.profileId;
+  }
 
-  revalidatePath("/investments");
+  // If profileId is provided, verify it exists and belongs to the user
+  if (finalProfileId) {
+    const profile = await prisma.investmentProfile.findUnique({
+      where: { id: finalProfileId },
+      select: { id: true, userId: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundError("Investment profile not found");
+    }
+
+    if (profile.userId !== userId) {
+      throw new AuthenticationError("You don't have permission to use this investment profile");
+    }
+  }
+
+  try {
+    const updated = await prisma.investment.update({
+      where: { id },
+      data: {
+        name: data.name,
+        type: data.type,
+        symbol: data.symbol,
+        quantity: data.quantity,
+        purchasePrice: data.purchasePrice,
+        currentPrice: data.currentPrice,
+        purchaseDate: data.purchaseDate,
+        strategy: data.strategy || null,
+        target: data.target || null,
+        profileId: finalProfileId,
+      },
+    });
+
+    revalidatePath("/investments");
+    return updated;
+  } catch (error: any) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error updating investment:", error);
+    }
+    throw new DatabaseError(`Failed to update investment: ${error.message || "Unknown error"}`);
+  }
 }
 
 export async function deleteInvestment(id: string) {
