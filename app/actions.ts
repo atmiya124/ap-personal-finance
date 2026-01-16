@@ -432,6 +432,23 @@ export async function updateInvestment(
     profileId?: string | null;
   }
 ) {
+  const userId = await getUserId();
+  if (!userId) throw new AuthenticationError();
+
+  // Verify the investment exists and belongs to the user
+  const investment = await prisma.investment.findUnique({
+    where: { id },
+    select: { id: true, userId: true },
+  });
+
+  if (!investment) {
+    throw new NotFoundError("Investment");
+  }
+
+  if (investment.userId !== userId) {
+    throw new AuthenticationError("You don't have permission to update this investment");
+  }
+
   await prisma.investment.update({
     where: { id },
     data: {
@@ -444,6 +461,23 @@ export async function updateInvestment(
 }
 
 export async function deleteInvestment(id: string) {
+  const userId = await getUserId();
+  if (!userId) throw new AuthenticationError();
+
+  // Verify the investment exists and belongs to the user
+  const investment = await prisma.investment.findUnique({
+    where: { id },
+    select: { id: true, userId: true },
+  });
+
+  if (!investment) {
+    throw new NotFoundError("Investment");
+  }
+
+  if (investment.userId !== userId) {
+    throw new AuthenticationError("You don't have permission to delete this investment");
+  }
+
   await prisma.investment.delete({ where: { id } });
   revalidatePath("/investments");
 }

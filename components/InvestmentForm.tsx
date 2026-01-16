@@ -42,9 +42,10 @@ interface InvestmentFormProps {
   onCancel?: () => void;
   onSuccess?: () => void;
   profileId?: string;
+  activeTab?: string;
 }
 
-export function InvestmentForm({ investment, onCancel, onSuccess, profileId }: InvestmentFormProps) {
+export function InvestmentForm({ investment, onCancel, onSuccess, profileId, activeTab }: InvestmentFormProps) {
   const [isOpen, setIsOpen] = useState(!!investment);
   
   // Open dialog when investment is provided (for editing)
@@ -176,10 +177,22 @@ export function InvestmentForm({ investment, onCancel, onSuccess, profileId }: I
       // Ensure name is set (should be auto-fetched, but fallback to symbol if not)
       const finalName = name || symbol.trim();
 
+      // Auto-append .TO suffix for Canadian stocks if in Canadian Market tab
+      let finalSymbol = symbol.trim().toUpperCase();
+      if (activeTab === "canadian" && type === "stock" && !investment) {
+        // Only for new investments (not editing)
+        const hasCanadianSuffix = finalSymbol.includes(".TO") || 
+                                  finalSymbol.includes(".V") || 
+                                  finalSymbol.includes("TSX");
+        if (!hasCanadianSuffix) {
+          finalSymbol = finalSymbol + ".TO";
+        }
+      }
+
       const data = {
         name: finalName,
         type,
-        symbol: symbol.trim(),
+        symbol: finalSymbol,
         quantity: parseFloat(quantity),
         purchasePrice: parseFloat(purchasePrice),
         currentPrice: parseFloat(currentPrice),
@@ -218,12 +231,16 @@ export function InvestmentForm({ investment, onCancel, onSuccess, profileId }: I
       } else {
         // Keep the name when editing (it was auto-fetched)
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || (investment ? "Failed to update investment" : "Failed to create investment");
       toast({
         title: "Error",
-        description: investment ? "Failed to update investment" : "Failed to create investment",
+        description: errorMessage,
         variant: "destructive",
       });
+      if (process.env.NODE_ENV === "development") {
+        console.error("Investment form error:", error);
+      }
     } finally {
       setLoading(false);
     }

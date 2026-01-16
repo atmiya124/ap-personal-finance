@@ -131,6 +131,7 @@ function InvestmentsContent({ initialData }: InvestmentsClientProps) {
                 {isProfileSelected ? (
           <InvestmentForm 
                     profileId={currentProfileId || undefined}
+                    activeTab={activeTab}
             onSuccess={() => {
               startTransition(() => {
                 router.refresh();

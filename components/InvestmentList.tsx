@@ -235,11 +235,18 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
           validUpdates.map((update) => {
             const investment = investments.find((i) => i.id === update.id)!;
             return updateInvestment(update.id, {
-              ...investment,
+              name: investment.name,
+              type: investment.type,
+              symbol: investment.symbol,
+              quantity: investment.quantity,
+              purchasePrice: investment.purchasePrice,
               currentPrice: update.currentPrice,
               purchaseDate: typeof investment.purchaseDate === "string" 
                 ? new Date(investment.purchaseDate) 
                 : investment.purchaseDate,
+              strategy: investment.strategy || null,
+              target: investment.target || null,
+              profileId: (investment as any).profileId || null,
             });
           })
         );
@@ -317,7 +324,7 @@ export function InvestmentList({ investments: initialInvestments }: InvestmentLi
                 <CardTitle className="text-sm font-medium text-gray-600">Total Value</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
+                <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalValue)}</p>
               </CardContent>
             </Card>
             <Card className="col-span-1">
