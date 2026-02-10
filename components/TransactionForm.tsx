@@ -170,22 +170,20 @@ export function TransactionForm({
           title: "Success",
           description: "Transaction updated successfully",
         });
+        setIsOpen(false);
       } else {
         await createTransaction(data);
         toast({
           title: "Success",
           description: "Transaction created successfully",
         });
-      }
-
-      setIsOpen(false);
-      if (onSuccess) onSuccess();
-      if (!transaction) {
         setAmount("");
         setDescription("");
         setPayee("");
         setCategoryId("none");
+        setDate(new Date());
       }
+      if (onSuccess) onSuccess();
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         console.error("Transaction error:", error);
