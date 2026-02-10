@@ -13,9 +13,10 @@ import {
   Pie,
   Cell,
   Legend,
+  LabelList,
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useMemo } from "react";
 
 const MONTH_NAMES = [
@@ -116,31 +125,13 @@ export function OverviewClient({
     return Object.values(map).sort((a, b) => b.value - a.value);
   }, [transactions]);
 
-  const cashflowData = useMemo(() => {
-    const byWeek: Record<string, { income: number; expense: number }> = {};
-    transactions.forEach((t) => {
-      const d = typeof t.date === "string" ? new Date(t.date) : t.date;
-      const weekStart = new Date(d);
-      weekStart.setDate(d.getDate() - d.getDay());
-      const key = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
-      if (!byWeek[key]) byWeek[key] = { income: 0, expense: 0 };
-      if (t.type === "income") byWeek[key].income += t.amount;
-      else if (t.type === "expense") byWeek[key].expense += t.amount;
-    });
-    const arr = Object.entries(byWeek)
-      .map(([key, v]) => ({ key, income: v.income, expense: v.expense }))
-      .sort((a, b) => {
-        const [ma, da] = a.key.split("/").map(Number);
-        const [mb, db] = b.key.split("/").map(Number);
-        return ma !== mb ? ma - mb : da - db;
-      });
-    if (arr.length === 0 && transactions.length > 0) {
-      const totalIncomeVal = transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
-      const totalExpenseVal = transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-      arr.push({ key: monthName, income: totalIncomeVal, expense: totalExpenseVal });
-    }
-    return arr;
-  }, [transactions, monthName]);
+  const cashflowData = useMemo(
+    () => [
+      { name: "Income", value: totalIncome, fill: "#10B981" },
+      { name: "Expense", value: totalExpense, fill: "#EF4444" },
+    ],
+    [totalIncome, totalExpense]
+  );
 
   const setMonthYear = (newMonth: number, newYear: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -148,20 +139,6 @@ export function OverviewClient({
     params.set("year", String(newYear));
     router.push(`/overview?${params.toString()}`);
     router.refresh();
-  };
-
-  const CustomBarTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null;
-    return (
-      <div className="bg-white p-3 border rounded-lg shadow-lg">
-        <p className="font-semibold text-gray-900 mb-1">{label}</p>
-        {payload.map((entry: any) => (
-          <p key={entry.name} className="text-sm" style={{ color: entry.color }}>
-            {entry.name}: {formatCurrency(entry.value)}
-          </p>
-        ))}
-      </div>
-    );
   };
 
   const PieTooltip = ({ active, payload }: any) => {
@@ -191,7 +168,7 @@ export function OverviewClient({
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold tracking-tight">
           Overview{" "}
           <span className="italic font-bold text-purple-600">{monthName}</span>
         </h1>
@@ -232,31 +209,31 @@ export function OverviewClient({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <h3 className="text-sm font-medium text-gray-500">Income</h3>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Income</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-green-600">
+            <p className="text-2xl font-semibold tracking-tight text-green-600">
               {formatCurrency(totalIncome)}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <h3 className="text-sm font-medium text-gray-500">Expense</h3>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Expense</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-red-600">
+            <p className="text-2xl font-semibold tracking-tight text-red-600">
               {formatCurrency(totalExpense)}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <h3 className="text-sm font-medium text-gray-500">Gross</h3>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Gross</CardTitle>
           </CardHeader>
           <CardContent>
             <p
-              className={`text-2xl font-semibold ${
+              className={`text-2xl font-semibold tracking-tight ${
                 gross >= 0 ? "text-green-600" : "text-red-600"
               }`}
             >
@@ -268,26 +245,41 @@ export function OverviewClient({
 
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-gray-900">Cashflow</h2>
-          <p className="text-sm text-gray-500">Income vs Expense</p>
+          <CardTitle className="text-lg">Cashflow</CardTitle>
+          <p className="text-sm text-muted-foreground">Income vs Expense</p>
         </CardHeader>
         <CardContent>
-          {cashflowData.length > 0 ? (
-            <div className="h-[300px] w-full">
+          {(totalIncome > 0 || totalExpense > 0) ? (
+            <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={cashflowData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="key" />
-                  <YAxis tickFormatter={(v) => `$${v}`} />
-                  <Tooltip content={<CustomBarTooltip />} />
-                  <Legend />
-                  <Bar dataKey="income" name="Income" fill="#10B981" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expense" name="Expense" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                <BarChart
+                  data={cashflowData}
+                  layout="vertical"
+                  margin={{ top: 20, right: 30, left: 80, bottom: 20 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                  <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} />
+                  <YAxis type="category" dataKey="name" width={70} tick={{ fontSize: 14 }} />
+                  <Tooltip
+                    formatter={(value: number) => [formatCurrency(value), ""]}
+                    contentStyle={{ borderRadius: "8px", border: "1px solid hsl(var(--border))" }}
+                  />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={56}>
+                    <LabelList
+                      dataKey="value"
+                      position="right"
+                      formatter={(v: number) => formatCurrency(v)}
+                      className="fill-foreground text-sm font-medium"
+                    />
+                    {cashflowData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-gray-500 py-8 text-center">No cashflow data for this month.</p>
+            <p className="text-muted-foreground py-8 text-center text-sm">No cashflow data for this month.</p>
           )}
         </CardContent>
       </Card>
@@ -296,54 +288,58 @@ export function OverviewClient({
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold text-gray-900">Income by category</h2>
+              <CardTitle className="text-lg">Income by category</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 min-h-[240px]">
-                {incomePieData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={240}>
-                    <PieChart>
-                      <Pie
-                        data={incomePieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        labelLine={false}
-                      >
-                        {incomePieData.map((entry, i) => (
-                          <Cell key={i} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<PieTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <p className="text-gray-500 text-sm text-center py-8">No income data</p>
-                )}
-              </div>
-              <div className="flex-1 space-y-1">
-                {incomeByCategory.map((c) => (
-                  <div
-                    key={c.name}
-                    className="flex items-center justify-between text-sm py-1 border-b border-gray-100"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: c.color }}
-                      />
-                      {c.name}
-                    </span>
-                    <span className="font-medium">{formatCurrency(c.value)}</span>
+            <CardContent className="space-y-6">
+              {incomePieData.length > 0 ? (
+                <>
+                  <div className="h-[220px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={incomePieData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={56}
+                          outerRadius={88}
+                          paddingAngle={2}
+                          stroke="none"
+                        >
+                          {incomePieData.map((entry, i) => (
+                            <Cell key={i} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<PieTooltip />} />
+                        <Legend formatter={(value) => value} />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
-                {incomeByCategory.length === 0 && (
-                  <p className="text-gray-500 text-sm">No categories</p>
-                )}
-              </div>
+                  <div className="rounded-lg border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="font-semibold">Category</TableHead>
+                          <TableHead className="text-right font-semibold">Value</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {incomeByCategory.map((c) => (
+                          <TableRow key={c.name}>
+                            <TableCell className="font-medium">{c.name}</TableCell>
+                            <TableCell className="text-right tabular-nums text-green-600">
+                              {formatCurrency(c.value)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-8">No income data</p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -351,54 +347,58 @@ export function OverviewClient({
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold text-gray-900">Expense by category</h2>
+              <CardTitle className="text-lg">Expense by category</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 min-h-[240px]">
-                {expensePieData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={240}>
-                    <PieChart>
-                      <Pie
-                        data={expensePieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        labelLine={false}
-                      >
-                        {expensePieData.map((entry, i) => (
-                          <Cell key={i} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<PieTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <p className="text-gray-500 text-sm text-center py-8">No expense data</p>
-                )}
-              </div>
-              <div className="flex-1 space-y-1">
-                {expenseByCategory.map((c) => (
-                  <div
-                    key={c.name}
-                    className="flex items-center justify-between text-sm py-1 border-b border-gray-100"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: c.color }}
-                      />
-                      {c.name}
-                    </span>
-                    <span className="font-medium">{formatCurrency(c.value)}</span>
+            <CardContent className="space-y-6">
+              {expensePieData.length > 0 ? (
+                <>
+                  <div className="h-[220px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={expensePieData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={56}
+                          outerRadius={88}
+                          paddingAngle={2}
+                          stroke="none"
+                        >
+                          {expensePieData.map((entry, i) => (
+                            <Cell key={i} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<PieTooltip />} />
+                        <Legend formatter={(value) => value} />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
-                {expenseByCategory.length === 0 && (
-                  <p className="text-gray-500 text-sm">No categories</p>
-                )}
-              </div>
+                  <div className="rounded-lg border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="font-semibold">Category</TableHead>
+                          <TableHead className="text-right font-semibold">Value</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {expenseByCategory.map((c) => (
+                          <TableRow key={c.name}>
+                            <TableCell className="font-medium">{c.name}</TableCell>
+                            <TableCell className="text-right tabular-nums text-red-600">
+                              {formatCurrency(c.value)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-8">No expense data</p>
+              )}
             </CardContent>
           </Card>
         </div>
