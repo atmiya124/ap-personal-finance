@@ -12,7 +12,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
   LabelList,
 } from "recharts";
 import { formatCurrency } from "@/lib/utils";
@@ -165,6 +164,27 @@ export function OverviewClient({
     total: totalExpense,
   }));
 
+  const splitLegend = (data: { name: string; color: string }[]) => {
+    const mid = Math.ceil(data.length / 2);
+    return { left: data.slice(0, mid), right: data.slice(mid) };
+  };
+  const incomeLegend = splitLegend(incomePieData);
+  const expenseLegend = splitLegend(expensePieData);
+
+  const LegendColumn = ({ items }: { items: { name: string; color: string }[] }) => (
+    <div className="flex flex-col gap-1.5 justify-center">
+      {items.map((c) => (
+        <div key={c.name} className="flex items-center gap-2">
+          <span
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: c.color }}
+          />
+          <span className="text-sm text-foreground">{c.name}</span>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -293,28 +313,31 @@ export function OverviewClient({
             <CardContent className="space-y-6">
               {incomePieData.length > 0 ? (
                 <>
-                  <div className="h-[220px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={incomePieData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={56}
-                          outerRadius={88}
-                          paddingAngle={2}
-                          stroke="none"
-                        >
-                          {incomePieData.map((entry, i) => (
-                            <Cell key={i} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip content={<PieTooltip />} />
-                        <Legend formatter={(value) => value} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div className="flex items-center gap-4 w-full h-[220px]">
+                    <LegendColumn items={incomeLegend.left} />
+                    <div className="flex-1 min-w-[180px] h-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={incomePieData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={56}
+                            outerRadius={88}
+                            paddingAngle={2}
+                            stroke="none"
+                          >
+                            {incomePieData.map((entry, i) => (
+                              <Cell key={i} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<PieTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <LegendColumn items={incomeLegend.right} />
                   </div>
                   <div className="rounded-lg border">
                     <Table>
@@ -352,28 +375,31 @@ export function OverviewClient({
             <CardContent className="space-y-6">
               {expensePieData.length > 0 ? (
                 <>
-                  <div className="h-[220px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={expensePieData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={56}
-                          outerRadius={88}
-                          paddingAngle={2}
-                          stroke="none"
-                        >
-                          {expensePieData.map((entry, i) => (
-                            <Cell key={i} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip content={<PieTooltip />} />
-                        <Legend formatter={(value) => value} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div className="flex items-center gap-4 w-full h-[220px]">
+                    <LegendColumn items={expenseLegend.left} />
+                    <div className="flex-1 min-w-[180px] h-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={expensePieData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={56}
+                            outerRadius={88}
+                            paddingAngle={2}
+                            stroke="none"
+                          >
+                            {expensePieData.map((entry, i) => (
+                              <Cell key={i} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<PieTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <LegendColumn items={expenseLegend.right} />
                   </div>
                   <div className="rounded-lg border">
                     <Table>
