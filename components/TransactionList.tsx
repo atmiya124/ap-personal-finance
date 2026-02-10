@@ -224,21 +224,24 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
               />
             </div>
           </div>
-          {/* Totals for selected month */}
-          {selectedMonth && (
-            <div className="mb-4 flex gap-8 items-center">
-              <div className="">
-                Total Income: <span className="text-green-700 font-semibold text-lg">{formatCurrency(totalIncome)}</span>
+          {/* Totals for filtered transactions */}
+          {filteredTransactions.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-6 items-center rounded-lg border bg-muted/30 px-4 py-3">
+              <div className="text-sm text-muted-foreground">
+                Total Income: <span className="text-green-700 font-semibold text-base">{formatCurrency(totalIncome)}</span>
               </div>
-              <div className="">
-                Total Expense: <span className="text-red-700 font-semibold text-lg">{formatCurrency(totalExpense)}</span>
+              <div className="text-sm text-muted-foreground">
+                Total Expense: <span className="text-red-700 font-semibold text-base">{formatCurrency(totalExpense)}</span>
               </div>
-              <div>
-                Gross Total:{" "}
-                <span className={`font-semibold text-lg ${
+              <div className="text-sm text-muted-foreground">
+                Gross:{" "}
+                <span className={`font-semibold text-base ${
                   totalIncome - totalExpense >= 0 ? "text-green-700" : "text-red-700"
                 }`}>{formatCurrency(totalIncome - totalExpense)}</span>
               </div>
+              <span className="text-xs text-muted-foreground ml-auto">
+                {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? "s" : ""}
+              </span>
             </div>
           )}
           <Table>
