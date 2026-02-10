@@ -199,11 +199,9 @@ export function DashboardClient({ initialData, availableYears }: DashboardClient
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // For balance, we'll use the account balance which doesn't change based on period
-    // So we'll compare current balance with itself (0% change)
-    const previousBalance = data.remainingBalance;
+    const previousGross = previousIncome - previousExpenses;
 
-    return { income: previousIncome, expenses: previousExpenses, balance: previousBalance };
+    return { income: previousIncome, expenses: previousExpenses, balance: previousGross };
   };
 
   const previousPeriod = calculatePreviousPeriod();
@@ -218,9 +216,10 @@ export function DashboardClient({ initialData, availableYears }: DashboardClient
     return ((current - previous) / previous) * 100;
   };
 
+  const gross = totalIncome - totalExpenses;
   const incomeChange = calculatePercentageChange(totalIncome, previousPeriod.income);
   const expensesChange = calculatePercentageChange(totalExpenses, previousPeriod.expenses);
-  const balanceChange = calculatePercentageChange(data.remainingBalance, previousPeriod.balance);
+  const balanceChange = calculatePercentageChange(gross, previousPeriod.balance);
 
   const dateRangeString = dateRange?.from && dateRange?.to
     ? `${format(dateRange.from, "MMM dd")} - ${format(dateRange.to, "MMM dd, yyyy")}`
@@ -284,7 +283,7 @@ export function DashboardClient({ initialData, availableYears }: DashboardClient
               <DashboardSummary
                 income={totalIncome}
                 expenses={totalExpenses}
-                balance={data.remainingBalance}
+                balance={gross}
                 currency={data.user.currency}
                 incomeChange={incomeChange}
                 expensesChange={expensesChange}

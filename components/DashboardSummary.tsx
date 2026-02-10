@@ -63,17 +63,17 @@ export function DashboardSummary({
         </CardContent>
       </Card>
 
-      {/* Total Savings Card */}
+      {/* Gross Card */}
       <Card className="bg-white border border-gray-200">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-600">Total Savings</h3>
+            <h3 className="text-sm font-medium text-gray-600">Gross</h3>
             <PiggyBank className="w-5 h-5 text-blue-600" />
           </div>
-          <p className="text-3xl font-bold text-gray-900 mb-2">
+          <p className={`text-3xl font-bold mb-2 ${balance >= 0 ? "text-green-600" : "text-red-600"}`}>
             {formatCurrency(balance, currency)}
           </p>
-          <p className="text-sm text-green-600 font-medium">
+          <p className={`text-sm font-medium ${balance >= 0 ? "text-green-600" : "text-red-600"}`}>
             {formatPercentage(balanceChange)} Since Last Week
           </p>
         </CardContent>
