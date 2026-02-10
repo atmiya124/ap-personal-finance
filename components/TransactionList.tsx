@@ -89,7 +89,7 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
       }
     }
     if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
+      const q = searchQuery.trim().toLowerCase().replace(/,/g, "");
       const date = typeof t.date === "string" ? new Date(t.date) : t.date;
       const dateStr = format(date, "MMM dd yyyy").toLowerCase();
       const payee = (t.payee ?? "").toLowerCase();
@@ -97,7 +97,14 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
       const categoryName = (t.category?.name ?? "").toLowerCase();
       const accountName = (t.account?.name ?? "").toLowerCase();
       const type = t.type.toLowerCase();
-      const amountStr = String(t.amount);
+      const amount = Number(t.amount);
+      const amountVariants = [
+        String(amount),
+        amount.toFixed(2),
+        amount.toFixed(0),
+        amount.toLocaleString("en-CA", { minimumFractionDigits: 0, maximumFractionDigits: 2 }),
+      ].join(" ");
+      const amountSearchable = amountVariants.replace(/,/g, "").toLowerCase();
       const matches =
         payee.includes(q) ||
         description.includes(q) ||
@@ -105,7 +112,7 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
         accountName.includes(q) ||
         type.includes(q) ||
         dateStr.includes(q) ||
-        amountStr.includes(q);
+        (q.length > 0 && amountSearchable.includes(q));
       if (!matches) return false;
     }
     return true;
