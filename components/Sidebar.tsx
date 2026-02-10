@@ -11,11 +11,13 @@ import {
   Calendar,
   Settings,
   FileText,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Monthly Overview", href: "/overview", icon: BarChart3 },
   { name: "Transactions", href: "/transactions", icon: Receipt },
   { name: "Category", href: "/categories", icon: Tag },
   { name: "Accounts", href: "/accounts", icon: Wallet },
