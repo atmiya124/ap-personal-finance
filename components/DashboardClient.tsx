@@ -221,6 +221,19 @@ export function DashboardClient({ initialData, availableYears }: DashboardClient
   const expensesChange = calculatePercentageChange(totalExpenses, previousPeriod.expenses);
   const balanceChange = calculatePercentageChange(gross, previousPeriod.balance);
 
+  const comparisonLabel =
+    dateRange?.from && dateRange?.to
+      ? (() => {
+          const days = Math.round(
+            (dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          if (days <= 7) return "vs last week";
+          if (days <= 31) return "vs previous 30 days";
+          if (days >= 364) return "vs previous year";
+          return `vs previous ${days} days`;
+        })()
+      : "vs previous period";
+
   const dateRangeString = dateRange?.from && dateRange?.to
     ? `${format(dateRange.from, "MMM dd")} - ${format(dateRange.to, "MMM dd, yyyy")}`
     : "All Time";
@@ -288,6 +301,7 @@ export function DashboardClient({ initialData, availableYears }: DashboardClient
                 incomeChange={incomeChange}
                 expensesChange={expensesChange}
                 balanceChange={balanceChange}
+                comparisonLabel={comparisonLabel}
               />
             </div>
             <IncomeExpenseChart 

@@ -3,8 +3,8 @@
 import { useState, useEffect, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
-import { format } from "date-fns";
-import { ArrowUpDown, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -71,6 +71,7 @@ export function RecentTransactions({
   const [transactions, setTransactions] = useState(initialTransactions);
   const [filterPayee, setFilterPayee] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [period, setPeriod] = useState<"This Year" | "This Month" | "This Week">("This Year");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const rowsPerPage = 10;
@@ -85,8 +86,25 @@ export function RecentTransactions({
     new Set(transactions.map((t) => t.category?.name).filter(Boolean))
   ) as string[];
 
-  // Filter transactions
+  const now = new Date();
+  const periodRange = (() => {
+    switch (period) {
+      case "This Week":
+        return { start: startOfWeek(now), end: endOfWeek(now) };
+      case "This Month":
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case "This Year":
+      default:
+        return { start: startOfYear(now), end: endOfYear(now) };
+    }
+  })();
+
+  // Filter transactions by period, payee, and category
   let filteredTransactions = transactions.filter((t) => {
+    const date = typeof t.date === "string" ? new Date(t.date) : t.date;
+    if (!isWithinInterval(date, { start: periodRange.start, end: periodRange.end })) {
+      return false;
+    }
     if (filterPayee && !t.payee?.toLowerCase().includes(filterPayee.toLowerCase())) {
       return false;
     }
@@ -109,7 +127,7 @@ export function RecentTransactions({
         <div className="flex items-center justify-between">
           <CardTitle>{isCurrentYear ? "Recent Transactions" : "Last Transactions"}</CardTitle>
           <div className="flex items-center gap-2">
-            <Select defaultValue="This Year">
+            <Select value={period} onValueChange={(v) => { setPeriod(v as typeof period); setCurrentPage(1); }}>
               <SelectTrigger className="w-[120px]">
                 <SelectValue />
               </SelectTrigger>
@@ -119,9 +137,6 @@ export function RecentTransactions({
                 <SelectItem value="This Week">This Week</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm">
-              Filter
-            </Button>
             {accounts.length > 0 && categories.length > 0 && (
               <TransactionForm 
                 accounts={accounts} 

@@ -10,6 +10,7 @@ interface DashboardSummaryProps {
   incomeChange?: number | string;
   expensesChange?: number | string;
   balanceChange?: number | string;
+  comparisonLabel?: string;
 }
 
 export function DashboardSummary({
@@ -20,6 +21,7 @@ export function DashboardSummary({
   incomeChange = 0,
   expensesChange = 0,
   balanceChange = 0,
+  comparisonLabel = "vs previous period",
 }: DashboardSummaryProps) {
   const formatPercentage = (value: number | string): string => {
     if (typeof value === 'string') return value;
@@ -42,7 +44,7 @@ export function DashboardSummary({
             {formatCurrency(income, currency)}
           </p>
           <p className="text-sm text-green-600 font-medium">
-            {formatPercentage(incomeChange)} Since Last Week
+            {formatPercentage(incomeChange)} {comparisonLabel}
           </p>
         </CardContent>
       </Card>
@@ -58,7 +60,7 @@ export function DashboardSummary({
             {formatCurrency(expenses, currency)}
           </p>
           <p className="text-sm text-red-600 font-medium">
-            {formatPercentage(expensesChange)} Since Last Week
+            {formatPercentage(expensesChange)} {comparisonLabel}
           </p>
         </CardContent>
       </Card>
@@ -74,7 +76,7 @@ export function DashboardSummary({
             {formatCurrency(balance, currency)}
           </p>
           <p className={`text-sm font-medium ${balance >= 0 ? "text-green-600" : "text-red-600"}`}>
-            {formatPercentage(balanceChange)} Since Last Week
+            {formatPercentage(balanceChange)} {comparisonLabel}
           </p>
         </CardContent>
       </Card>
