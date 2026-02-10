@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/datepicker";
-import { Edit, Trash2, Filter } from "lucide-react";
+import { Edit, Trash2, Search } from "lucide-react";
 import { TransactionForm } from "./TransactionForm";
 import { deleteTransaction } from "@/app/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,7 @@ import {
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 interface Account {
   id: string;
@@ -72,6 +73,7 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTransactions = transactions.filter((t) => {
     if (filterType !== "all" && t.type !== filterType) return false;
@@ -85,6 +87,26 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
       ) {
         return false;
       }
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const date = typeof t.date === "string" ? new Date(t.date) : t.date;
+      const dateStr = format(date, "MMM dd yyyy").toLowerCase();
+      const payee = (t.payee ?? "").toLowerCase();
+      const description = (t.description ?? "").toLowerCase();
+      const categoryName = (t.category?.name ?? "").toLowerCase();
+      const accountName = (t.account?.name ?? "").toLowerCase();
+      const type = t.type.toLowerCase();
+      const amountStr = String(t.amount);
+      const matches =
+        payee.includes(q) ||
+        description.includes(q) ||
+        categoryName.includes(q) ||
+        accountName.includes(q) ||
+        type.includes(q) ||
+        dateStr.includes(q) ||
+        amountStr.includes(q);
+      if (!matches) return false;
     }
     return true;
   });
@@ -133,6 +155,17 @@ export function TransactionList({ transactions: initialTransactions, accounts, c
         <CardContent>
           <div className="mb-4 flex gap-4 items-center justify-between flex-wrap">
             <div className="flex gap-4 items-center flex-wrap">
+              {/* Search */}
+              <div className="relative w-[240px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search transactions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               {/* Type Filter */}
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-[150px]">
